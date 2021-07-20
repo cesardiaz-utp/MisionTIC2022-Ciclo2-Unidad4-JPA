@@ -1,136 +1,71 @@
 package co.edu.utp.misiontic2022.c2.cdiaz.model.dao;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
 import co.edu.utp.misiontic2022.c2.cdiaz.model.vo.Employee;
-import co.edu.utp.misiontic2022.c2.cdiaz.util.JDBCUtilities;
 
 public class EmployeeDao {
 
-    private DepartmentDao departmentDao;
+    private final EntityManagerFactory emf;
 
     public EmployeeDao() {
-        departmentDao = new DepartmentDao();
+        emf = Persistence.createEntityManagerFactory("employees-pu");
     }
 
-    public List<Employee> findAll() throws SQLException {
-        var response = new ArrayList<Employee>();
-        Connection connection = null;
+    public List<Employee> findAll() {
+        List<Employee> employees = null;
+        var em = emf.createEntityManager();
         try {
-            connection = JDBCUtilities.getConnection();
-            var statement = connection.prepareStatement("select * from employees");
-            var rset = statement.executeQuery();
-            while (rset.next()) {
-                var employee = new Employee();
-                employee.setId(rset.getInt(1));
-                employee.setName(rset.getString(2));
-                employee.setEmail(rset.getString(3));
-                employee.setDepartment(departmentDao.findById(rset.getInt(4)));
-                response.add(employee);
-            }
+            var query = em.createQuery("SELECT e FROM Employee e", Employee.class);
+            employees = query.getResultList();
         } finally {
-            if (connection != null) {
-                connection.close();
-            }
+            em.close();
         }
-        return response;
+        return employees;
     }
 
-    public Employee findById(Integer id) throws SQLException {
+    public Employee findById(Integer id) {
         Employee response = null;
-        Connection connection = null;
-        try {
-            connection = JDBCUtilities.getConnection();
-            var statement = connection.prepareStatement("select * from employees where id = ?");
-            statement.setInt(1, id);
 
-            var rset = statement.executeQuery();
-            if (rset.next()) {
-                response = new Employee();
-                response.setId(rset.getInt(1));
-                response.setName(rset.getString(2));
-                response.setEmail(rset.getString(3));
-                response.setDepartment(departmentDao.findById(rset.getInt(4)));
-            }
+        var em = emf.createEntityManager();
+        try {
+            response = em.find(Employee.class, id);
         } finally {
-            if (connection != null) {
-                connection.close();
-            }
+            em.close();
         }
         return response;
     }
 
-    public Employee save(Employee employee) throws SQLException {
-        Connection connection = null;
+    public Employee save(Employee employee) {
+        var em = emf.createEntityManager();
         try {
-            connection = JDBCUtilities.getConnection();
-            if (employee.getId() == null) {
-                employee.setId(generarConsecutivo());
-                var statement = connection.prepareStatement("insert into employees values (?, ?, ?, ?)");
-                statement.setInt(1, employee.getId());
-                statement.setString(2, employee.getName());
-                statement.setString(3, employee.getEmail());
-                statement.setInt(4, employee.getDepartment().getId());
-
-                statement.execute();
-            } else {
-                var statement = connection
-                        .prepareStatement("update employees set name = ?, email = ?, department_id = ? where id = ?");
-                statement.setString(1, employee.getName());
-                statement.setString(2, employee.getEmail());
-                statement.setInt(3, employee.getDepartment().getId());
-                statement.setInt(4, employee.getId());
-
-                statement.execute();
-            }
-
+            em.getTransaction().begin();
+            em.persist(employee);
+            em.getTransaction().commit();
         } finally {
-            if (connection != null) {
-                connection.close();
-            }
+            em.close();
         }
         return employee;
     }
 
-    public Employee delete(Integer id) throws SQLException, Exception {
-        Connection connection = null;
-        var employee = findById(id);
-        if (employee == null) {
-            throw new Exception("Empleado no existe");
-        }
-
+    public Employee delete(Integer id) throws Exception {
+        Employee employee = null;
+        var em = emf.createEntityManager();
         try {
-            connection = JDBCUtilities.getConnection();
-            var statement = connection.prepareStatement("delete from employees where id = ?");
-            statement.setInt(1, id);
-            statement.execute();
-        } finally {
-            if (connection != null) {
-                connection.close();
+            employee = em.find(Employee.class, id);
+            if (employee == null) {
+                throw new Exception("Empleado no existe");
             }
+            em.getTransaction().begin();
+            em.remove(employee);
+            em.getTransaction().commit();
+        } finally {
+            em.close();
         }
         return employee;
-    }
-
-    private Integer generarConsecutivo() throws SQLException {
-        Integer consecutivo = 1;
-        Connection connection = null;
-        try {
-            connection = JDBCUtilities.getConnection();
-            var statement = connection.prepareStatement("select max(id) as consecutivo from employees");
-            var rset = statement.executeQuery();
-            if (rset.next()) {
-                consecutivo = rset.getInt("consecutivo") + 1;
-            }
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-        return consecutivo;
     }
 
 }

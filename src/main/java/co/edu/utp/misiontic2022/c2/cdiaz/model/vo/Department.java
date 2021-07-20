@@ -1,9 +1,21 @@
 package co.edu.utp.misiontic2022.c2.cdiaz.model.vo;
 
-public class Department {
+import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "departments")
+public class Department implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     private String name;
-    
+
     public Department() {
     }
 

@@ -1,9 +1,25 @@
 package co.edu.utp.misiontic2022.c2.cdiaz.model.vo;
 
-public class Employee {
+import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "employees")
+public class Employee implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     private String name;
     private String email;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     private Department department;
 
     public Employee() {

@@ -11,9 +11,10 @@
             <property name="javax.persistence.jdbc.url" value="jdbc:sqlite:employees.db" />
             <property name="javax.persistence.jdbc.username" value="" />
             <property name="javax.persistence.jdbc.password" value="" />
-            <property name="hibernate.dialect" value="org.hibernate.dialect.SQLiteDialect" />
-            <property name="hibernate.hbm2ddl.auto" value="update" />
-            <property name="hibernate.show_sql" value="true" />
+
+            <property name="hibernate.dialect" value="org.sqlite.hibernate.dialect.SQLiteDialect" />
+            <property name="hibernate.hbm2ddl.auto" value="create" />
+            <property name="hibernate.show_sql" value="false" />
         </properties>
     </persistence-unit>
 </persistence>
