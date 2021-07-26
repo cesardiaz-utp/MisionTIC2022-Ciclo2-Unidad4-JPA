@@ -42,6 +42,16 @@ public class EmployeeDao {
     public Employee save(Employee employee) {
         var em = emf.createEntityManager();
         try {
+            if (employee.getId() != null){
+                // Para actualizar un registro, es necesario enviar
+                // un dato enlazado (attached) a la base de datos
+                var actual = em.find(Employee.class, employee.getId());
+                actual.setName(employee.getName());
+                actual.setEmail(employee.getEmail());
+                actual.setDepartment(employee.getDepartment());
+
+                employee = actual;
+            }
             em.getTransaction().begin();
             em.persist(employee);
             em.getTransaction().commit();
